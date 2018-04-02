@@ -7,7 +7,7 @@ data_path = "./data/diamonds_ja.csv"
 
 clarity_level = c("I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF")
 cut_level = c("Good", "Very Good", "Excellent", "True Hearts")
-color_level = toupper(letters)[4:26]
+color_level = rev(toupper(letters)[4:26])
 polish_level = c("GD", "VG", "EX")
 symmetry_level = c("FR", "GD", "VG", "EX")
 
@@ -42,11 +42,11 @@ diamonds_processed =
     ## Remove Large diamonds
     subset(., carat < 2.5) %>%
     ## transform variables to factor
-    transform(., clarity = factor(clarity, levels = clarity_level)) %>%
-    transform(., cut = factor(cut, levels = cut_level)) %>%
-    transform(., color = factor(color, levels = color_level)) %>%
-    transform(., polish = factor(polish, levels = polish_level)) %>%
-    transform(., symmetry = factor(symmetry, levels = symmetry_level)) %>%
+    transform(., clarity = ordered(clarity, levels = clarity_level)) %>%
+    transform(., cut = ordered(cut, levels = cut_level)) %>%
+    transform(., color = ordered(color, levels = color_level)) %>%
+    transform(., polish = ordered(polish, levels = polish_level)) %>%
+    transform(., symmetry = ordered(symmetry, levels = symmetry_level)) %>%
     transform(., shape = factor(shape)) %>%
     transform(., carat_adjusted_price = sqrt(price)/carat) %>% 
     ## Select only common shapes
@@ -222,7 +222,9 @@ ggplot(data = diamonds_result, aes(x = pred_lme, y = price)) +
 ## https://www.jamesallen.com/loose-diamonds/round-cut/1.00-carat-d-color-i1-clarity-very-good-cut-sku-3463671
 
 ## NOTE (Michael): This diamond has a much lower price then predicted
-##                 because it exhibits strong fluorence.
+##                 because it exhibits strong fluorence. Huge
+##                 discrepency with the second diamond, while the only
+##                 thing separate them is the degree of fluorenscence.
 ##
 ## https://www.jamesallen.com/loose-diamonds/round-cut/2.41-carat-d-color-if-clarity-excellent-cut-sku-2770221
-
+## https://www.jamesallen.com/loose-diamonds/round-cut/2.45-carat-d-color-if-clarity-excellent-cut-sku-2114348
