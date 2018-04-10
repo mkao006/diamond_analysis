@@ -1,0 +1,4 @@
+.Rhistory
+*.rds
+rsconnect/
+venv/
