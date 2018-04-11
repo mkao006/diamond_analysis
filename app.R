@@ -20,15 +20,15 @@ ui <- fluidPage(
 
 
         sidebarPanel(
+            ## Shape
+            selectInput(inputId = "shapeSelection",
+                        label = "Shape",
+                        choices = shape_level,
+                        selected = "round"),
             ## Carat
             numericInput(inputId = "caratInput",
                          label = "Carat",
                          value = 0.5),
-            ## Shape
-            selectInput(inputId = "shapeSelection",
-                        label = "Shape",
-                        choices = shape_level),
-
             ## Clarity
             selectInput(inputId = "claritySelection",
                         label = "Clarity",
@@ -42,18 +42,7 @@ ui <- fluidPage(
             ## Color
             selectInput(inputId = "colorSelection",
                         label = "Color",
-                        choices = color_level),
-
-            ## Polish
-            selectInput(inputId = "polishSelection",
-                        label = "Polish",
-                        choices = polish_level),
-
-            ## Symmetry
-            selectInput(inputId = "symmetrySelection",
-                        label = "Symmetry",
-                        choices = symmetry_level)
-
+                        choices = color_level)
         ),
 
         mainPanel(
@@ -71,14 +60,13 @@ ui <- fluidPage(
 server <- function(input, output){
 
     output$expectedPrice = renderText({
-        newdf = data.frame(carat = input$caratInput,
-                           shape = input$shapeSelection,
+        newdf = data.frame(shape = input$shapeSelection,
+                           carat = input$caratInput,
                            clarity = input$claritySelection,
                            cut = input$cutSelection,
-                           color = input$colorSelection,
-                           polish = input$polishSelection,
-                           symmetry = input$symmetrySelection)
-        predict(model, newdata = newdf)
+                           color = input$colorSelection)
+        print(newdf)
+        exp(predict(model, newdata = newdf))
     })
 }
 

@@ -4,8 +4,8 @@ library(magrittr)
 library(ggplot2)
 
 model_output_path = "../data/lmer.rds"
-data_path = "../data/processed_diamonds.csv"
-diamonds_processed = read.csv(data_path)
+data_path = "../data/processed_diamonds.Rda"
+diamonds_processed = readRDS(data_path)
 
 ########################################################################
 ## Model exploratory
@@ -61,16 +61,16 @@ ggplot(data = diamonds_result, aes(x = pred_lm, y = price)) +
 
 
 ## Use Linear Mixed model, but removed a few variables
-model_lme = lmer(price ~ (1 + poly(carat, 2)|clarity:color:cut) + polish + shape + symmetry,
+model_lme = lmer(log(price) ~ (1 + poly(log(carat), 2)|clarity:color:cut) + shape,
               data = diamond_model_data$training_set)
-pred_lme = predict(model_lme, newdata = diamond_model_data$test_set)
+pred_lme = exp(predict(model_lme, newdata = diamond_model_data$test_set))
 mape_lme = mape(pred_lme, diamond_model_data$test_set$price)
 
 ## The result improved, however there the prediction at the extreme
 ## low end are poor with several values being negative. The high end
 ## market appears to be fine, the discrepencies are likely to be
 ## variation in valuation.
-diamonds_result$pred_lme = predict(model_lme, newdata = diamonds_result)
+diamonds_result$pred_lme = exp(predict(model_lme, newdata = diamonds_result))
 ggplot(data = diamonds_result, aes(x = pred_lme, y = price)) +
     geom_point() +
     geom_abline(intercept = 0, slope = 1, col = "red")
