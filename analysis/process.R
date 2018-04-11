@@ -51,4 +51,5 @@ diamonds %>%
     transform(., carat_adjusted_price = sqrt(price)/carat) %>% 
     ## Select only common shapes
     subset(., shape %in% common_shape) %>%
+    droplevels %>%
     saveRDS(., file = output_path)
