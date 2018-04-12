@@ -34,9 +34,6 @@ diamonds[diamonds$symmetry == "ID", "symmetry"] = "EX"
 diamonds %>%
     ## Remove missing price and unclassified entries.
     subset(., !is.na(price) & cut != '' & polish != '' & symmetry != '') %>%
-    ## Select relevant variables
-    select(., c(id, carat, clarity, color, cut, depth, polish, price,
-                shape, symmetry, tablesize, x, y, z)) %>%
     ## Remove inferior quality diamonds with very few observations
     subset(., color %in% toupper(letters)[4:8] & symmetry != 'FR' & clarity != "I1") %>%
     ## Remove Large diamonds
