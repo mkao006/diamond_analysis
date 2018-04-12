@@ -17,6 +17,7 @@ shape_level = levels(model_var$shape)
 clarity_level = levels(model_var$clarity)
 cut_level = levels(model_var$cut)
 color_level = levels(model_var$color)
+selectionChoice = c("clarity", "color", "cut", "polish", "shape", "symmetry")
 
 ## Calculate model summary
 r2 = with(diamonds_processed, round(cor(price, prediction)^2, 2))
@@ -52,11 +53,11 @@ analysis_tab = tabPanel("Analysis",
                                 br(),
                                 selectInput(inputId = "x_axis",
                                             label = "X-axis",
-                                            choices = c("clarity", "color", "cut"),
+                                            choices = selectionChoice,
                                             selected = "clarity"),
                                 selectInput(inputId = "y_axis",
                                             label = "Y-axis",
-                                            choices = c("clarity", "color", "cut"),
+                                            choices = selectionChoice,
                                             selected = "color"),
                                 checkboxInput(inputId = "to_log",
                                               label = "Log the axis?",
