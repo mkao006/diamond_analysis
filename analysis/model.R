@@ -78,6 +78,45 @@ ggplot(data = diamonds_result, aes(x = pred_lme, y = price)) +
     facet_grid(clarity ~ color)
 
 
+## Use Linear Mixed model, but removed a few variables
+model_lme_poly = lmer(log(price) ~ (1 + poly(log(carat), 2)|clarity:color:cut) + shape,
+              data = diamond_model_data$training_set)
+pred_lme_poly= exp(predict(model_lme_poly, newdata = diamond_model_data$test_set))
+
+## The result improved, however there the prediction at the extreme
+## low end are poor with several values being negative. The high end
+## market appears to be fine, the discrepencies are likely to be
+## variation in valuation.
+diamonds_result$pred_lme_poly= exp(predict(model_lme_poly, newdata = diamonds_result))
+ggplot(data = diamonds_result, aes(x = pred_lme_poly, y = price)) +
+    geom_point() +
+    geom_abline(intercept = 0, slope = 1, col = "red")
+
+## After accounting or the between group differences, we can see the
+## fit is now much better and accomodates to the difference classes of
+## diamonds.
+ggplot(data = diamonds_result, aes(x = pred_lme_poly, y = price)) +
+    geom_point() +
+    geom_abline(intercept = 0, slope = 1, col = "red") +
+    facet_grid(clarity ~ color)
+
+## The result shows the LME model without polynomial term has the
+## highest R-squared.
+
+prediction_summary <- function(y, y_hat, model_name){
+    cat(model_name, " R-squared", cor(y, y_hat)^2, "\n")
+    cat(model_name, " RMSE:", mean(sqrt((y - y_hat)^2)), "\n")
+    cat(model_name, " MAPE:", mean(abs(y - y_hat)/y) * 100, "\n")
+}
+
+with(diamonds_result,
+{
+    prediction_summary(price, pred_lm, "Linear Model")
+    prediction_summary(price, pred_lme, "Linear Mixed Model")
+    prediction_summary(price, pred_lme_poly, "Linear Mixed Model with Poly Term")
+})
+
+
 ## NOTE (Michael): A closer inspection shows that some of the grading
 ##                 may not be ideal. The clarity of the following
 ##                 diamon is terribly flawed and thus the model gave a
@@ -94,4 +133,4 @@ ggplot(data = diamonds_result, aes(x = pred_lme, y = price)) +
 ## https://www.jamesallen.com/loose-diamonds/round-cut/2.45-carat-d-color-if-clarity-excellent-cut-sku-2114348
 
 ## Save the model to app
-saveRDS(model_lme, file = model_output_path)
+saveRDS(model_lme_poly, file = model_output_path)
