@@ -7,6 +7,7 @@ model = readRDS("data/lmer.rds")
 data_path = "data/processed_diamonds.Rda"
 diamonds_processed = readRDS(data_path)
 diamonds_processed$prediction = exp(predict(model, newdata = diamonds_processed))
+diamonds_processed$gain = with(diamonds_processed, prediction - price)
 
 ## Set variable level
 model_var = model@frame
@@ -15,6 +16,7 @@ clarity_level = levels(model_var$clarity)
 cut_level = levels(model_var$cut)
 color_level = levels(model_var$color)
 selectionChoice = c("clarity", "color", "cut", "polish", "shape", "symmetry")
+price_range = range(diamonds_processed$price)
 
 ## Calculate model summary
 r2 = with(diamonds_processed, round(cor(price, prediction)^2, 2))

@@ -1,4 +1,6 @@
 library(shiny)
+library(magrittr)
+library(dplyr)
 library(ggplot2)
 source("helper.R")
 
@@ -11,13 +13,12 @@ analysis_tab = tabPanel("Analysis",
                         sidebarLayout(
                             sidebarPanel(
                                 h2("Predicted vs Retail Price"),
-                                p("Shown here is the breakdown of the predicted price of a Linear Mixed Model vs the retail price as advertised on James Allen."),
+                                p("Shown here is the breakdown of the predicted price of a Linear Mixed Model vs the retail price as advertised on James Allen. The work is only a personal project and is not affiliated with James Allen"),
                                 p("A total of ", format(n_diamonds, big.mark = ","),
                                   " diamonds were included in the model."),
                                 h3("Model Summary:"),
                                 p("R-squared:", r2),
                                 p("RMSE:", rmse),
-                                br(),
                                 br(),
                                 selectInput(inputId = "x_axis",
                                             label = "X-axis",
@@ -78,8 +79,43 @@ compare_tab = tabPanel("Diamond Comparison",
 ## Find a bargain tab
 bargain_tab = tabPanel("Find a Bargain",
                        sidebarLayout(
-                           sidebarPanel(),
-                           mainPanel()
+                           sidebarPanel(
+                               selectInput(inputId = "shape",
+                                           label = "Shape",
+                                           choices = shape_level,
+                                           selected = "round"),
+                               ## Carat
+                               numericInput(inputId = "carat",
+                                            label = "Minimum Carat Size",
+                                            value = 0.5),
+                               ## Clarity
+                               selectInput(inputId = "clarity",
+                                           label = "Minimum Clarity Level",
+                                           choices = clarity_level,
+                                           selected = "VVS1"),
+
+                               ## Cut
+                               selectInput(inputId = "cut",
+                                           label = "Minim Cut Level",
+                                           choices = cut_level,
+                                           selected = "Very Good"),
+
+                               ## Color
+                               selectInput(inputId = "color",
+                                           label = "Minim Color Level",
+                                           choices = color_level,
+                                           selected = "G"),
+
+                               ## Price range
+                               sliderInput(inputId = "price_range",
+                                           label = "Price Range",
+                                           min = price_range[1],
+                                           max = price_range[2],
+                                           value = c(0, 5000))
+                           ),
+                           mainPanel(
+                               tableOutput('bargain_table')
+                           )
                        ))
 
 
@@ -149,6 +185,22 @@ server <- function(input, output){
                     theme(axis.text = element_text(size = 15))
             }
     }, height = 600)
+
+    output$bargain_table = renderTable({
+        diamonds_processed %>%
+            subset(carat >= input$carat &
+                   as.numeric(clarity) >= which(clarity_level == input$clarity) &
+                   as.numeric(cut) >= which(cut_level == input$cut) &
+                   as.numeric(color) >= which(color_level == input$color) &
+                   shape == input$shape & 
+                   price >= input$price_range[1] &
+                   price <= input$price_range[2]) %>%
+            arrange(., desc(gain)) %>%
+            select(., c(id, carat, cut, color, clarity, symmetry, polish, price, gain, url)) %>%
+            unique %>%
+            transform(url = paste0("<a href='", url, "' target='_blank'> Go to Diamond </a>")) %>%
+            head(., 10)
+    }, sanitize.text.function = function(x) x)
 }
 
 
