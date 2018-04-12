@@ -2,6 +2,7 @@ library(shiny)
 library(magrittr)
 library(dplyr)
 library(ggplot2)
+library(lme4)
 source("helper.R")
 
 ########################################################################
