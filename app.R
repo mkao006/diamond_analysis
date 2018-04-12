@@ -1,38 +1,6 @@
 library(shiny)
 library(ggplot2)
-
-########################################################################
-## Preliminary setup
-########################################################################
-
-## Load model
-model = readRDS("data/lmer.rds")
-data_path = "data/processed_diamonds.Rda"
-diamonds_processed = readRDS(data_path)
-diamonds_processed$prediction = exp(predict(model, newdata = diamonds_processed))
-
-## Set variable level
-model_var = model@frame
-shape_level = levels(model_var$shape)
-clarity_level = levels(model_var$clarity)
-cut_level = levels(model_var$cut)
-color_level = levels(model_var$color)
-selectionChoice = c("clarity", "color", "cut", "polish", "shape", "symmetry")
-
-## Calculate model summary
-r2 = with(diamonds_processed, round(cor(price, prediction)^2, 2))
-rmse = with(diamonds_processed, round(mean(sqrt((price - prediction)^2)), 2))
-n_diamonds = NROW(diamonds_processed)
-
-## Define the base plot
-base_prediction_plot =
-    ggplot(data = diamonds_processed, aes(x = prediction, y = price)) +
-    geom_point() +
-    geom_abline(intercept = 0, slope = 1, col = "red") +
-    xlab("Predicted Price") +
-    ylab("Retail Price")
-
-
+source("helper.R")
 
 ########################################################################
 ## Define UI
@@ -72,6 +40,9 @@ analysis_tab = tabPanel("Analysis",
 compare_tab = tabPanel("Diamond Comparison",
                        sidebarLayout(
                            sidebarPanel(
+                               h2("Price change"),
+                               p("This tab shows the price change of an up or downgrade given the current selection. All prices are quoted in USD."),
+                               p("Note: The change in carat is measured in 0.1 carat"),
                                ## Shape
                                selectInput(inputId = "shape",
                                            label = "Shape",
@@ -84,24 +55,24 @@ compare_tab = tabPanel("Diamond Comparison",
                                ## Clarity
                                selectInput(inputId = "clarity",
                                            label = "Clarity",
-                                           choices = clarity_level),
+                                           choices = clarity_level,
+                                           selected = "VVS1"),
 
                                ## Cut
                                selectInput(inputId = "cut",
                                            label = "Cut",
-                                           choices = cut_level),
+                                           choices = cut_level,
+                                           selected = "Very Good"),
 
                                ## Color
                                selectInput(inputId = "color",
                                            label = "Color",
-                                           choices = color_level)
+                                           choices = color_level,
+                                           selected = "G")
                            ),
                            mainPanel(
-                               fluidRow(
-                                   column(4, "Decrease"),
-                                   column(4, textOutput(outputId = "expectedPrice")),
-                                   column(4, "Increase")
-                               )
+                               h3(textOutput("expected_price")),
+                               plotOutput("change_plot")
                            )))
 
 ## Find a bargain tab
@@ -145,14 +116,39 @@ server <- function(input, output){
             output
         }, height = 650)
 
-    output$expectedPrice = renderText({
+    output$expected_price = renderText({
         newdf = data.frame(shape = input$shape,
                            carat = input$carat,
                            clarity = input$clarity,
                            cut = input$cut,
                            color = input$color)
-        exp(predict(model, newdata = newdf))
+        paste0("The expected price of the current selection is: $",
+               round(exp(predict(model, newdata = newdf))))
     })
+
+    output$change_plot = renderPlot({
+        data.frame(shape = input$shape,
+                   carat = input$carat,
+                   clarity = input$clarity,
+                   cut = input$cut,
+                   color = input$color) %>%
+            neighbour_change(., model = model) %>% {
+                max_price_change = abs(max(.$price_change))
+                ggplot(data = .,
+                       aes(x = price_change, y = quality)) +
+                    geom_point(size = 10, aes(color = change, shape = shape_category(price_change))) +
+                    geom_line(arrow = arrow(length = unit(0.30, "cm"),
+                                            ends = "both", type = "closed")) +
+                    xlim(limits = c(-max_price_change, max_price_change)) +
+                    geom_vline(xintercept = 0, linetype = "longdash") +
+                    ylab("") +
+                    xlab("Expected Price Change") +
+                    scale_shape_manual(values = c("-1" = 60, "0" = 73, "1" = 62),
+                                       breaks = c(-1, 0, 1)) +
+                    guides(color=FALSE, shape = FALSE) +
+                    theme(axis.text = element_text(size = 15))
+            }
+    }, height = 600)
 }
 
 
