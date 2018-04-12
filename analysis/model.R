@@ -61,7 +61,7 @@ ggplot(data = diamonds_result, aes(x = pred_lm, y = price)) +
 
 
 ## Use Linear Mixed model, but removed a few variables
-model_lme = lmer(log(price) ~ (1 + poly(log(carat), 2)|clarity:color:cut) + shape,
+model_lme = lmer(log(price) ~ (1 + log(carat)|clarity:color:cut) + shape,
               data = diamond_model_data$training_set)
 pred_lme = exp(predict(model_lme, newdata = diamond_model_data$test_set))
 mape_lme = mape(pred_lme, diamond_model_data$test_set$price)
