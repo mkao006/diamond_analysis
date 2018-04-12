@@ -22,10 +22,6 @@ train_test_split <- function(data, train_prop, seed){
     list(training_set = train, test_set = test)
 }
 
-mape <- function(x, y){
-    mean(abs((x - y)/x)) * 100
-}
-
 ## Create model data for training and testing
 diamond_model_data =
     diamonds_processed %>%
@@ -39,7 +35,6 @@ model_lm = lm(price ~ poly(carat, 2) + clarity + color + cut +
                   depth + polish + shape + symmetry + tablesize + x + y + z,
               data = diamond_model_data$training_set)
 pred_lm = predict(model_lm, newdata = diamond_model_data$test_set)
-mape_lm = mape(pred_lm, diamond_model_data$test_set$price)
 
 ## Append the prediction so we can see how we perform
 diamonds_result = diamonds_processed
@@ -64,7 +59,6 @@ ggplot(data = diamonds_result, aes(x = pred_lm, y = price)) +
 model_lme = lmer(log(price) ~ (1 + log(carat)|clarity:color:cut) + shape,
               data = diamond_model_data$training_set)
 pred_lme = exp(predict(model_lme, newdata = diamond_model_data$test_set))
-mape_lme = mape(pred_lme, diamond_model_data$test_set$price)
 
 ## The result improved, however there the prediction at the extreme
 ## low end are poor with several values being negative. The high end
