@@ -83,3 +83,12 @@ ggplot(data = diamonds_processed, aes(x = cut, y = carat_adjusted_price)) +
 
 ggplot(data = diamonds_processed, aes(x = cut, y = carat_adjusted_price)) +
     geom_boxplot()
+
+
+## Take log-log relationship
+ggplot(data = diamonds_processed, aes(x = carat, y = price)) +
+    scale_y_log10() +
+    scale_x_log10() +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    facet_grid(clarity ~ color)
