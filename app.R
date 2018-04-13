@@ -9,14 +9,104 @@ source("helper.R")
 ## Define UI
 ########################################################################
 
+## Find a bargain tab
+bargain_tab = tabPanel("Find a Bargain",
+                       sidebarLayout(
+                           sidebarPanel(
+                               p("This app helps to identify the best priced diamond given a minimum set of criteria. The gain is essentially the difference between the model predicted price and the actual retail price."),
+                               p("Due to the static nature of the application, certain diamonds may become unavailable."),
+                               selectInput(inputId = "min_shape",
+                                           label = "Shape",
+                                           choices = shape_level,
+                                           selected = "round"),
+                               ## Clarity
+                               selectInput(inputId = "min_clarity",
+                                           label = "Minimum Clarity Level",
+                                           choices = clarity_level,
+                                           selected = "VVS1"),
+
+                               ## Color
+                               selectInput(inputId = "min_color",
+                                           label = "Minim Color Level",
+                                           choices = color_level,
+                                           selected = "G"),
+                               
+                               ## Cut
+                               selectInput(inputId = "min_cut",
+                                           label = "Minim Cut Level",
+                                           choices = cut_level,
+                                           selected = "Very Good"),                               
+                               
+                               ## Carat
+                               numericInput(inputId = "min_carat",
+                                            label = "Minimum Carat Size",
+                                            value = 0.5),                               
+
+                               ## Price range
+                               sliderInput(inputId = "price_range",
+                                           label = "Price Range",
+                                           min = price_range[1],
+                                           max = price_range[2],
+                                           value = c(0, 5000))
+                           ),
+                           mainPanel(
+                               p("Precaution should be taken when using this app, as the model is far from ideal, and excludes many of the factors that may influence the actual price of the diamonds."),
+                               tableOutput('bargain_table'),
+                               code("The work is only a personal project and is not affiliated with James Allen.")
+                           )
+                       ))
+
+## Comparison Tab
+compare_tab = tabPanel("Price Derivatives",
+                       sidebarLayout(
+                           sidebarPanel(
+                               h2("Price Derivatives"),
+                               p("The purpose of this analysis is to illustrate the expected change in price when considering to upgrade or downgrade a specific quality of the selected diamond."),
+                               p("An expected price is shown at the top, with the average price differential plotted below. The carat changes in the order of 0.1 carat."),
+                               p("All prices are quoted in USD, the actual price difference depends on the market."),
+                               ## Shape
+                               selectInput(inputId = "shape",
+                                           label = "Shape",
+                                           choices = shape_level,
+                                           selected = "round"),
+                               ## Clarity
+                               selectInput(inputId = "clarity",
+                                           label = "Clarity",
+                                           choices = clarity_level,
+                                           selected = "VVS1"),
+                               ## Color
+                               selectInput(inputId = "color",
+                                           label = "Color",
+                                           choices = color_level,
+                                           selected = "G"),                               
+
+                               ## Cut
+                               selectInput(inputId = "cut",
+                                           label = "Cut",
+                                           choices = cut_level,
+                                           selected = "Very Good"),
+                               
+                               ## Carat
+                               numericInput(inputId = "carat",
+                                            label = "Carat",
+                                            value = 0.5)
+                               
+                           ),
+                           mainPanel(
+                               h3(textOutput("expected_price")),
+                               plotOutput("change_plot")
+                           )))
+
+
 ## Analysis Tab
-analysis_tab = tabPanel("Analysis",
+analysis_tab = tabPanel("Predictive Analysis",
                         sidebarLayout(
                             sidebarPanel(
                                 h2("Predicted vs Retail Price"),
-                                p("Shown here is the breakdown of the predicted price of a Linear Mixed Model vs the retail price as advertised on James Allen. The work is only a personal project and is not affiliated with James Allen"),
+                                p("The usefulness of the application depends on the predictive power of the model. Shown here is the breakdown of the predicted price vs the retail price as advertised on James Allen. The model summary is also provided below."),
                                 p("A total of ", format(n_diamonds, big.mark = ","),
                                   " diamonds were included in the model."),
+                                p("In general, the model performs extremely well by most modelling standards, however, the discrepancy increases towards the extreme high end and rare diamonds."),
                                 h3("Model Summary:"),
                                 p("R-squared:", r2),
                                 p("RMSE:", rmse),
@@ -32,99 +122,18 @@ analysis_tab = tabPanel("Analysis",
                                 checkboxInput(inputId = "to_log",
                                               label = "Log the axis?",
                                               value = TRUE),
-                                code("Disclaimer: Every model has it's flaw, the author takes no responsibility of the results")
+                                code("Disclaimer: Every model has its flaw, the author takes no responsibility of the results")
                             ),
                             mainPanel(
                                 plotOutput("prediction_expected_plot"))
                         ))
 
-## Comparison Tab
-compare_tab = tabPanel("Diamond Comparison",
-                       sidebarLayout(
-                           sidebarPanel(
-                               h2("Price change"),
-                               p("This tab shows the price change of an up or downgrade given the current selection. All prices are quoted in USD."),
-                               p("Note: The change in carat is measured in 0.1 carat"),
-                               ## Shape
-                               selectInput(inputId = "shape",
-                                           label = "Shape",
-                                           choices = shape_level,
-                                           selected = "round"),
-                               ## Carat
-                               numericInput(inputId = "carat",
-                                            label = "Carat",
-                                            value = 0.5),
-                               ## Clarity
-                               selectInput(inputId = "clarity",
-                                           label = "Clarity",
-                                           choices = clarity_level,
-                                           selected = "VVS1"),
-
-                               ## Cut
-                               selectInput(inputId = "cut",
-                                           label = "Cut",
-                                           choices = cut_level,
-                                           selected = "Very Good"),
-
-                               ## Color
-                               selectInput(inputId = "color",
-                                           label = "Color",
-                                           choices = color_level,
-                                           selected = "G")
-                           ),
-                           mainPanel(
-                               h3(textOutput("expected_price")),
-                               plotOutput("change_plot")
-                           )))
-
-## Find a bargain tab
-bargain_tab = tabPanel("Find a Bargain",
-                       sidebarLayout(
-                           sidebarPanel(
-                               selectInput(inputId = "shape",
-                                           label = "Shape",
-                                           choices = shape_level,
-                                           selected = "round"),
-                               ## Carat
-                               numericInput(inputId = "carat",
-                                            label = "Minimum Carat Size",
-                                            value = 0.5),
-                               ## Clarity
-                               selectInput(inputId = "clarity",
-                                           label = "Minimum Clarity Level",
-                                           choices = clarity_level,
-                                           selected = "VVS1"),
-
-                               ## Cut
-                               selectInput(inputId = "cut",
-                                           label = "Minim Cut Level",
-                                           choices = cut_level,
-                                           selected = "Very Good"),
-
-                               ## Color
-                               selectInput(inputId = "color",
-                                           label = "Minim Color Level",
-                                           choices = color_level,
-                                           selected = "G"),
-
-                               ## Price range
-                               sliderInput(inputId = "price_range",
-                                           label = "Price Range",
-                                           min = price_range[1],
-                                           max = price_range[2],
-                                           value = c(0, 5000))
-                           ),
-                           mainPanel(
-                               tableOutput('bargain_table')
-                           )
-                       ))
-
 
 ## Put everything together
 ui <- navbarPage("Diamond Analysis",
-                 analysis_tab,
-                 compare_tab,
-                 bargain_tab
+                 bargain_tab,
+                 compare_tab,                 
+                 analysis_tab
                  )
 
 
@@ -189,10 +198,10 @@ server <- function(input, output){
 
     output$bargain_table = renderTable({
         diamonds_processed %>%
-            subset(carat >= input$carat &
-                   as.numeric(clarity) >= which(clarity_level == input$clarity) &
-                   as.numeric(cut) >= which(cut_level == input$cut) &
-                   as.numeric(color) >= which(color_level == input$color) &
+            subset(carat >= input$min_carat &
+                   as.numeric(clarity) >= which(clarity_level == input$min_clarity) &
+                   as.numeric(cut) >= which(cut_level == input$min_cut) &
+                   as.numeric(color) >= which(color_level == input$min_color) &
                    shape == input$shape & 
                    price >= input$price_range[1] &
                    price <= input$price_range[2]) %>%
