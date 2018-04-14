@@ -131,8 +131,8 @@ analysis_tab = tabPanel("Predictive Analysis",
 
 ## Put everything together
 ui <- navbarPage("Diamond Analysis",
+                 compare_tab,
                  bargain_tab,
-                 compare_tab,                 
                  analysis_tab
                  )
 
